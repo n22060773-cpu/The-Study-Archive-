@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comments / Sharing - The Study Archive</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="banner">
+        <h1>The Study Archive</h1>
+    </div>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="signup.html">Welcome</a>
+        <a href="study.html">How To Study</a>
+        <a href="resources.html">Resources</a>
+        <a href="sharing.html">Comments / Sharing</a>
+    </nav>
+
+    <main>
+        <h2 class="sharing-title">Comments / Sharing</h2>
+
+        <div class="sharing-guidelines">
+            <h3>Sharing Guidelines</h3>
+            <p>This page allows students to share useful study tips, advice and academic resources with others.</p>
+            <p>Keep contributions relevant to studying, respectful and appropriate for Year 10. Please do not include personal or private information.</p>
+        </div>
+
+        <div class="contribution-box">
+            <h3>Share a Tip or Resource</h3>
+
+            <p id="current-user" aria-live="polite"></p>
+
+            <form id="contribution-form">
+                <label for="contribution-type">Contribution Type</label>
+
+                <select id="contribution-type" required>
+                    <option value="">Choose a type</option>
+                    <option value="Study Tip">Study Tip</option>
+                    <option value="Resource">Resource</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label for="contribution-text">Your Contribution</label>
+
+                <textarea
+                    id="contribution-text"
+                    maxlength="2000"
+                    placeholder="Share a study tip, useful resource or piece of advice..."
+                    required
+                ></textarea>
+
+                <button type="submit" class="post-button">Post</button>
+            </form>
+
+            <p id="post-message" class="status-message" aria-live="polite"></p>
+        </div>
+
+        <div class="recent-contributions">
+            <h2>Recent Contributions</h2>
+            <div id="contribution-list"></div>
+        </div>
+    </main>
+
+    <script>
+        const contributionForm = document.getElementById("contribution-form");
+        const contributionList = document.getElementById("contribution-list");
+        const currentUserText = document.getElementById("current-user");
+        const postMessage = document.getElementById("post-message");
+        const contributionText = document.getElementById("contribution-text");
+        const contributionType = document.getElementById("contribution-type");
+
+        // Get the username saved during registration.
+        let currentUser = "";
+
+        try {
+            currentUser = localStorage.getItem("studyArchiveCurrentUser") || "";
+        } catch (error) {
+            currentUser = "";
+        }
+
+        if (currentUser) {
+            currentUserText.textContent = "Posting as: " + currentUser;
+        } else {
+            currentUserText.textContent = "Please create an account before posting a contribution.";
+        }
+
+        // Read saved contributions from this browser.
+        function getContributions() {
+            return JSON.parse(
+                localStorage.getItem("studyArchiveContributions") || "[]"
+            );
+        }
+
+        // Display the most recent contribution first.
+        function displayContributions() {
+            contributionList.innerHTML = "";
+
+            let contributions;
+
+            try {
+                contributions = getContributions();
+            } catch (error) {
+                const errorMessage = document.createElement("p");
+                errorMessage.className = "no-contributions";
+                errorMessage.textContent = "Saved contributions could not be loaded in this browser.";
+                contributionList.appendChild(errorMessage);
+                return;
+            }
+
+            contributions.sort(function(a, b) {
+                return new Date(b.dateSubmitted) - new Date(a.dateSubmitted);
+            });
+
+            if (contributions.length === 0) {
+                const emptyMessage = document.createElement("p");
+                emptyMessage.className = "no-contributions";
+                emptyMessage.textContent = "No contributions yet. Be the first to share a useful study tip!";
+                contributionList.appendChild(emptyMessage);
+                return;
+            }
+
+            contributions.forEach(function(contribution) {
+                const card = document.createElement("div");
+                card.className = "contribution-card";
+
+                const heading = document.createElement("h3");
+                heading.textContent = contribution.type || "Study Tip";
+
+                const username = document.createElement("p");
+                username.className = "username";
+                username.textContent = "Posted by " + contribution.username;
+
+                const content = document.createElement("p");
+                content.textContent = contribution.text;
+                content.style.whiteSpace = "pre-wrap";
+
+                const date = document.createElement("p");
+                date.className = "contribution-date";
+                date.textContent = new Date(
+                    contribution.dateSubmitted
+                ).toLocaleString();
+
+                card.appendChild(heading);
+                card.appendChild(username);
+                card.appendChild(content);
+                card.appendChild(date);
+
+                contributionList.appendChild(card);
+            });
+        }
+
+        // Save the new contribution in the browser.
+        contributionForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                alert("Please create an account before posting.");
+                return;
+            }
+
+            const text = contributionText.value.trim();
+            const type = contributionType.value;
+
+            if (!text || !type) {
+                alert("Please choose a contribution type and write your post.");
+                return;
+            }
+
+            try {
+                const contributions = getContributions();
+
+                contributions.push({
+                    username: currentUser,
+                    type: type,
+                    text: text,
+                    dateSubmitted: new Date().toISOString()
+                });
+
+                localStorage.setItem(
+                    "studyArchiveContributions",
+                    JSON.stringify(contributions)
+                );
+
+                contributionForm.reset();
+
+                postMessage.textContent = "Your contribution has been posted successfully!";
+                postMessage.style.color = "#365c3a";
+
+                displayContributions();
+
+            } catch (error) {
+                postMessage.textContent = "Your contribution could not be saved in this browser. Please try again.";
+                postMessage.style.color = "#8b2525";
+            }
+        });
+
+        displayContributions();
+    </script>
+</body>
+</html>

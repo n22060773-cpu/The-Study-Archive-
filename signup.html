@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - The Study Archive</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="banner">
+        <h1>The Study Archive</h1>
+    </div>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="signup.html">Welcome</a>
+        <a href="study.html">How To Study</a>
+        <a href="resources.html">Resources</a>
+        <a href="sharing.html">Comments / Sharing</a>
+    </nav>
+
+    <main>
+        <h2>Create Your Account</h2>
+
+        <div class="account-sections">
+            <div class="account-box">
+                <h3>Sign Up</h3>
+
+                <p>This demonstration saves your username in this browser so you can share study tips.</p>
+
+                <form id="signup-form">
+                    <label for="first-name">First Name</label>
+                    <input
+                        type="text"
+                        id="first-name"
+                        autocomplete="given-name"
+                        required
+                    >
+
+                    <label for="last-name">Last Name</label>
+                    <input
+                        type="text"
+                        id="last-name"
+                        autocomplete="family-name"
+                        required
+                    >
+
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        autocomplete="username"
+                        required
+                    >
+
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <button type="submit" class="signup-button">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const signupForm = document.getElementById("signup-form");
+
+        signupForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const firstName = document.getElementById("first-name").value.trim();
+            const lastName = document.getElementById("last-name").value.trim();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+
+            if (!firstName || !lastName || !username || !password) {
+                alert("Please complete every field.");
+                return;
+            }
+
+            try {
+                const users = JSON.parse(
+                    localStorage.getItem("studyArchiveUsers") || "[]"
+                );
+
+                const usernameExists = users.some(function(user) {
+                    return user.username.toLowerCase() === username.toLowerCase();
+                });
+
+                if (usernameExists) {
+                    alert("This username already exists. Please choose another.");
+                    return;
+                }
+
+                // Save the basic account details in this browser.
+                // The password is not saved in this demonstration.
+                const newUser = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    username: username,
+                    dateCreated: new Date().toISOString()
+                };
+
+                users.push(newUser);
+
+                localStorage.setItem(
+                    "studyArchiveUsers",
+                    JSON.stringify(users)
+                );
+
+                localStorage.setItem("studyArchiveCurrentUser", username);
+
+                alert("Your account has been created successfully!");
+
+                window.location.href = "sharing.html";
+
+            } catch (error) {
+                alert("Chrome could not save your account in this browser. Please try again.");
+            }
+        });
+    </script>
+</body>
+</html>
